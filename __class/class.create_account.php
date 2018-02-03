@@ -85,29 +85,35 @@ class CreateAccount extends DBconnect
 	{
 		# Check Account & Validate user account
 
-		$valid_check = "SELECT * FROM valid_account WHERE";
-		$valid_check .= "(email = '".$this->email."')";
-		$valid_check_query = mysqli_query($this->plug, $valid_check);
+		$valid_check        = " SELECT * FROM valid_account WHERE ";
+		$valid_check       .= " (email = '".$this->email."') ";
+		$valid_check_query  = mysqli_query($this->plug, $valid_check);
 		$valid_check_result = mysqli_num_rows($valid_check_query);
 
-		if (!$valid_check)
+		if (!$valid_check_query)
 		{
-			echo 'Error Validating account Query';
-		}elseif ($valid_check_result > 0)
-		{
-			echo '<span style="color: red;">Validation Error</span>';
+			// check if query fail to run...
+			echo 'Error Validating account Query <br />'.mysqli_error($this->plug);
+
+		}elseif ($valid_check_result > 0){ //greater than z3r0 means something was found
+
+			// check if account not found...
+			echo '<span style="color: red;">Account already validated i guess.</span>';
 		}else{
 
-			$validated_acc = "INSERT INTO valid_account";
-			$validated_acc .= "(bvn_no, name, email, account_type, account_no, code, pin_code)";
-			$validated_acc .= "VALUES ('".$this->bvn_no."', '".$this->name."', '".$this->email."', '".$this->acc_type."', '".$this->account_no."', '".$this->code."', '".$this->pin_code."')";
+			// create a new valid account 
+			$validated_acc  = " INSERT INTO valid_account ";
+			$validated_acc .= " (bvn_no, name, email, account_type, ";
+			$validated_acc .= " account_no, code, pin_code ) ";
+			$validated_acc .= " VALUES ('".$this->bvn_no."', '".$this->name."', ";
+			$validated_acc .= " '".$this->email."', '".$this->acc_type."',  "; 
+			$validated_acc .= " '".$this->account_no."', '".$this->code."', '".$this->pin_code."')";
 			$validated_acc_query = mysqli_query($this->plug, $validated_acc);
 
 			if (!$validated_acc_query)
 			{
-				echo 'Your Account can not be validated now, please try again';
-			}elseif (mysqli_affected_rows($this->plug))
-			{
+				echo 'Error processing validation request query '.mysqli_error($this->plug);
+			}elseif(mysqli_affected_rows($this->plug)){
 				# code...
 				echo '<span class="glyphicon glyphicon-ok">Account Validated</span><br />';
 				echo '<span class="fa fa-lock">Your defualt pin: 1234 </span><br />';
@@ -115,8 +121,12 @@ class CreateAccount extends DBconnect
 				echo '</div>';
 				echo '<div class="panel-footer">PHP Bank</div>';
 				echo '</div>';
+			}else{
+				// if no rows was affected 
+				// echo 'Your Account can not be validated now, please try again';
+				echo '<br />';
+				echo 'Your Account can not be validated now, please try again';	
 			}
-
 		}
 	}
 }
